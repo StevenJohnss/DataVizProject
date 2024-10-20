@@ -1,0 +1,8 @@
+new_venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.dockerignore
+Dockerfile.dev
+Dockerfile.prod
