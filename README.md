@@ -34,7 +34,6 @@ DataVizProject is a comprehensive data visualization tool that allows users to u
 - Database: PostgreSQL
 - Containerization: Docker
 - Orchestration: Kubernetes
-- CI/CD: GitHub Actions
 
 ## Getting Started
 
