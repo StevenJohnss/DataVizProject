@@ -1,5 +1,5 @@
-from app import db
-from models.core import EmployeeSales
+from ..extension import db
+from ..models.core import EmployeeSales
 import pandas as pd
 
 class EmployeeSalesService:
@@ -39,24 +39,34 @@ class EmployeeSalesService:
         return False
 
     def compute_statistics(self, user_id):
-        # Compute statistics for sales of a specific user
+        # Compute statistics for sales of a specific user, grouped by product name
         sales = EmployeeSales.query.filter_by(user_id=user_id).all()
         if not sales:
             return {}
 
         # Create a DataFrame from the sales data
-        df = pd.DataFrame([(sale.sale_amount, sale.quantity) for sale in sales], columns=['sale_amount', 'quantity'])
+        df = pd.DataFrame([(sale.product_name, sale.sale_amount, sale.quantity) for sale in sales], 
+                          columns=['product_name', 'sale_amount', 'quantity'])
 
-        # Calculate statistics
-        return {
-            "mean": df['sale_amount'].mean(),  # Mean of sale amounts
-            "median": df['sale_amount'].median(),  # Median of sale amounts
-            "mode": df['sale_amount'].mode().tolist(),  # Mode of sale amounts
-            "quartiles": {
-                "Q1": df['sale_amount'].quantile(0.25),  # First quartile
-                "Q2": df['sale_amount'].quantile(0.5),   # Second quartile (median)
-                "Q3": df['sale_amount'].quantile(0.75),  # Third quartile
-            },
-            "outliers": df[(df['sale_amount'] < (df['sale_amount'].mean() - 3 * df['sale_amount'].std())) | 
-                            (df['sale_amount'] > (df['sale_amount'].mean() + 3 * df['sale_amount'].std()))]['sale_amount'].tolist()  # Outliers
-        }
+        # Group by product_name
+        grouped = df.groupby('product_name')
+
+        # Calculate statistics for each product
+        stats = {}
+        for product_name, group in grouped:
+            stats[product_name] = {
+                "mean": float(group['sale_amount'].mean()),
+                "median": float(group['sale_amount'].median()),
+                "mode": group['sale_amount'].mode().tolist(),
+                "quartiles": {
+                    "Q1": float(group['sale_amount'].quantile(0.25)),
+                    "Q2": float(group['sale_amount'].quantile(0.5)),
+                    "Q3": float(group['sale_amount'].quantile(0.75)),
+                },
+                "outliers": group[(group['sale_amount'] < (group['sale_amount'].mean() - 3 * group['sale_amount'].std())) | 
+                                  (group['sale_amount'] > (group['sale_amount'].mean() + 3 * group['sale_amount'].std()))]['sale_amount'].tolist(),
+                "total_sales": float(group['sale_amount'].sum()),
+                "total_quantity": int(group['quantity'].sum())
+            }
+
+        return stats

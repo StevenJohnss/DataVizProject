@@ -1,4 +1,4 @@
-from app import db
+from ..extension import db
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)

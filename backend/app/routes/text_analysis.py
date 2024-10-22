@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from services.text_services import TextService
+from ..services.text_services import TextService
 
 text_analysis_bp = Blueprint('text_analysis', __name__)
 service = TextService()
@@ -32,7 +32,7 @@ def visualize_text():
     if not content:
         return jsonify({"error": "Content is required"}), 400
 
-    visualization = service.generate_tsne_visualization(content)
+    visualization = service.generate_text_visualization(content)
     return jsonify(visualization), 200
 
 @text_analysis_bp.route('/text/profile/update', methods=['PUT'])
@@ -49,3 +49,17 @@ def update_profile():
     if updated_profile:
         return jsonify({"msg": "Profile updated successfully", "summary": updated_profile.summary}), 200
     return jsonify({"error": "Profile not found"}), 404
+
+@text_analysis_bp.route('/text/profile', methods=['GET'])
+@jwt_required()
+def get_profile():
+    user_id = get_jwt_identity()
+    user, profile = service.get_profile_by_user_id(user_id)
+
+    resp= {"name": user.email.split("@")[0] , "email": user.email}
+    if profile:
+        profile = profile[0]
+        resp["summary"] = profile.summary
+        resp["id"] = profile.id
+    
+    return jsonify(resp), 200

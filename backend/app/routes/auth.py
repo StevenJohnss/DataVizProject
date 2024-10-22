@@ -1,9 +1,10 @@
+from datetime import timedelta
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required
-from app import db
-from app.models.core import User  # Import the User model
+from ..extension import db
+from ..models.core import User  # Import the User model
 from werkzeug.security import generate_password_hash, check_password_hash  # Import hashing functions
-from backend.app.routes.serliazers.serliazers import UserSchema
+from .serliazers.serliazers import UserSchema
 from marshmallow import ValidationError
 
 # Create a Blueprint for authentication routes
@@ -15,6 +16,7 @@ jwt = JWTManager()  # Initialize JWT manager
 @auth_bp.route('/register', methods=['POST'])
 def register():
     # Define the UserSchema as shown above
+    print("register route called")
     user_schema = UserSchema()
     try:
         # Validate and deserialize input
@@ -37,7 +39,7 @@ def login():
     password = request.json.get('password')  # Get password from request
     user = User.query.filter_by(email=email).first()  # Query user by username
     if user and check_password_hash(user.password, password):  # Check hashed password
-        access_token = create_access_token(identity=user.id)  # Create JWT token
+        access_token = create_access_token(identity=user.id, expires_delta=timedelta(hours=8))  # Create JWT token
         return jsonify(access_token=access_token), 200  # Return token
     return jsonify({"msg": "Bad username or password"}), 401  # Return error message
 

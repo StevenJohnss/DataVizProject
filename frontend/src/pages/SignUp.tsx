@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useAuth } from './AuthContext';
+import { useAuth } from '../auth/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../api';
 import { motion } from 'framer-motion';
@@ -29,11 +29,15 @@ const SignUp: React.FC = () => {
         login(access_token);
         navigate('/');
       } else {
-        setError('Registration failed');
+        setError(`Registration failed`);
       }
-    } catch (error) {
-      console.error('Error:', error);
-      setError('An error occurred. Please try again.');
+    } catch (error: any) {
+      console.log('Error:', error);
+      let error_msg = 'An error occurred:';
+      if (error?.response?.data?.password) {
+        error_msg += `Password: ${error?.response?.data?.password}`;
+      }
+      setError(error_msg);
     }
   };
 

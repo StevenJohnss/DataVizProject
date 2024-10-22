@@ -7,26 +7,74 @@ interface ProfileData {
   summary: string;
 }
 
+interface AnalysisResult {
+  summary: string;
+  keywords: string[];
+  sentiment: {
+    polarity: number;
+    subjectivity: number;
+  };
+}
+
+interface Visualization {
+  x: number;
+  y: number;
+}
+
 const Profile: React.FC = () => {
   const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
+  const [visualization, setVisualization] = useState<Visualization | null>(null);
+  const [newSummary, setNewSummary] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const response = await api.get<ProfileData>('/profile');
-        setProfile(response.data);
-      } catch (error) {
-        console.error('Error fetching profile:', error);
-        setError('Failed to load profile data');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchProfile();
   }, []);
+
+  const fetchProfile = async () => {
+    try {
+      const response = await api.get<ProfileData>('/text/profile');
+      setProfile(response.data);
+      setNewSummary(response.data.summary);
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+      setError('Failed to load profile data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAnalyze = async () => {
+    try {
+      const response = await api.post<AnalysisResult>('/text/analyze', { summary: newSummary });
+      setAnalysis(response.data);
+    } catch (error) {
+      console.error('Error analyzing text:', error);
+      setError('Failed to analyze text');
+    }
+  };
+
+  const handleUpdateSummary = async () => {
+    try {
+      await api.put('/text/profile/update', { summary: newSummary });
+      fetchProfile();
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      setError('Failed to update profile');
+    }
+  };
+
+  const handleVisualize = async () => {
+    try {
+      const response = await api.post<Visualization>('/text/visualize', { summary: newSummary });
+      setVisualization(response.data);
+    } catch (error) {
+      console.error('Error visualizing text:', error);
+      setError('Failed to visualize text');
+    }
+  };
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
@@ -41,22 +89,54 @@ const Profile: React.FC = () => {
       >
         <h1 className="text-3xl font-bold text-gray-900 mb-6">Profile</h1>
         {profile && (
+          <div>
           <div className="bg-white shadow overflow-hidden sm:rounded-lg">
             <div className="px-4 py-5 sm:px-6">
               <h3 className="text-lg leading-6 font-medium text-gray-900">User Information</h3>
-            </div>
-            <div className="border-t border-gray-200">
-              <dl>
-                <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                  <dt className="text-sm font-medium text-gray-500">Email</dt>
-                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{profile.email}</dd>
+                <p>Email: {profile.email}</p>
+                <textarea
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  value={newSummary}
+                  onChange={(e) => setNewSummary(e.target.value)}
+                />
+                <div className="mt-4 space-x-2">
+                  <button onClick={handleUpdateSummary} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Update Summary
+                  </button>
+                  <button onClick={handleAnalyze} className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                    Analyze Text
+                  </button>
+                  <button onClick={handleVisualize} className="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded">
+                    Visualize Text
+                  </button>
                 </div>
-                <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                  <dt className="text-sm font-medium text-gray-500">Summary</dt>
-                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{profile.summary}</dd>
-                </div>
-              </dl>
+              </div>
             </div>
+            {analysis && (
+              <div className="mt-4">
+                <h4>Analysis Result:</h4>
+                <p>Summary: {analysis.summary}</p>
+                <p>Keywords: {analysis.keywords}</p>
+                <p>Sentiment - Polarity: {analysis.sentiment.polarity}, Subjectivity: {analysis.sentiment.subjectivity}</p>
+              </div>
+            )}
+            {visualization && (
+              <div className="mt-4">
+                <h4>Text Visualization (t-SNE):</h4>
+                <div className="w-64 h-64 border border-gray-300 relative">
+                  <div
+                    className="absolute w-2 h-2 bg-red-500 rounded-full"
+                    style={{
+                      left: `${(visualization.x + 1) * 32}px`,
+                      top: `${(visualization.y + 1) * 32}px`,
+                    }}
+                  ></div>
+                </div>
+                <p className="mt-2">
+                  X: {visualization.x.toFixed(4)}, Y: {visualization.y.toFixed(4)}
+                </p>
+            </div>
+            )}
           </div>
         )}
       </motion.div>

@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from services.tabular_services import EmployeeSalesService
+from ..services.tabular_services import EmployeeSalesService
 
 
 sales_data_bp = Blueprint('sales_data', __name__)  # Create a new blueprint for sales data

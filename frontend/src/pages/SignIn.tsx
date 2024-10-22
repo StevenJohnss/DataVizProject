@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useAuth } from './AuthContext';
+import { useAuth } from '../auth/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../api';
 import { motion } from 'framer-motion';

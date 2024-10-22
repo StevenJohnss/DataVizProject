@@ -1,5 +1,5 @@
-from app import db
-from models.core import Image
+from ..extension import db
+from ..models.core import Image
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
@@ -63,3 +63,6 @@ class ImageService:
 
         return Image(user_id=user_id, filename=manipulated_filename, filepath=manipulated_filepath)
 
+    def get_user_images(self, user_id):
+        # Query the database to get all images for the user
+        return Image.query.filter_by(user_id=user_id).all()

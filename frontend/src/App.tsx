@@ -5,8 +5,8 @@ import Dashboard from './pages/Dashboard';
 import Sales from './pages/Sales';
 import Images from './pages/Images';
 import Profile from './pages/Profile';
-import SignIn from './auth/SignIn';
-import SignUp from './auth/SignUp';
+import SignIn from './pages/SignIn';
+import SignUp from './pages/SignUp';
 import ProtectedRoute from './auth/ProtectedRoute';
 import { AuthProvider } from './auth/AuthContext';
 
