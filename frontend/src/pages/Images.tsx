@@ -31,6 +31,7 @@ const Images: React.FC = () => {
 
   const handleImageUpload = async (uploadedImages: any[]) => {
     setImages([...images, ...uploadedImages]);
+    fetchImages();
   };
 
   const handleImageSelect = (image: Image) => {

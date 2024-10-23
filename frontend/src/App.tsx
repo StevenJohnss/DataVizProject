@@ -9,6 +9,8 @@ import SignIn from './pages/SignIn';
 import SignUp from './pages/SignUp';
 import ProtectedRoute from './auth/ProtectedRoute';
 import { AuthProvider } from './auth/AuthContext';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const App: React.FC = () => {
   return (
@@ -24,6 +26,7 @@ const App: React.FC = () => {
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           </Routes>
         </Layout>
+        <ToastContainer position="top-right" autoClose={3000} />
       </Router>
     </AuthProvider>
   );

@@ -16,8 +16,13 @@ class TextService:
         # Save text data to the database
         # text_data = self.update_profile_summary(user_id=user_id, new_summary=content)
 
-        # Perform text analysis
-        summary = summarize(content)
+        # Check content length
+      
+        summary = summarize(content, ratio=0.2)  # Adjust the ratio as needed
+        if not summary:
+            summary = None  # Use the original content if summarization fails
+
+
         extracted_keywords = keywords(content, words=5, lemmatize=True)
         sentiment = TextBlob(content).sentiment
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import api from '../api';
 
 interface ProductStatistics {
@@ -43,7 +43,7 @@ const Dashboard: React.FC = () => {
   const productNames = groupedStatisticalData ? Object.keys(groupedStatisticalData) : [];
 
   const chartData = useMemo(() => {
-    if (!groupedStatisticalData) return [];
+    if (!groupedStatisticalData) return { pieChartData: [], barChartData: [] };
 
     let data: ProductStatistics;
 
@@ -90,18 +90,23 @@ const Dashboard: React.FC = () => {
       ), data.mode[0])];
     }
 
-    if (!data) return [];
+    if (!data) return { pieChartData: [], barChartData: [] };
 
-    return [
+    const pieChartData = [
+      { name: 'Total Quantity', value: data.total_quantity },
+      { name: 'Total Sales', value: data.total_sales },
+    ];
+
+    const barChartData = [
       { name: 'Mean', value: data.mean },
       { name: 'Median', value: data.median },
       { name: 'Mode', value: data.mode[0] },
       { name: 'Q1', value: data.quartiles.Q1 },
       { name: 'Q2', value: data.quartiles.Q2 },
       { name: 'Q3', value: data.quartiles.Q3 },
-      { name: 'Total Quantity', value: data.total_quantity },
-      { name: 'Total Sales', value: data.total_sales },
     ];
+
+    return { pieChartData, barChartData };
   }, [groupedStatisticalData, selectedProduct]);
 
   return (
@@ -137,26 +142,44 @@ const Dashboard: React.FC = () => {
 
                   </div>
                 </div>
-                <ResponsiveContainer width="100%" height={400}>
-                  <PieChart>
-                    <Pie
-                      data={chartData}
-                      dataKey="value"
-                      nameKey="name"
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={150}
-                      fill="#8884d8"
-                      label
-                    >
-                      {chartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4">Total Quantity and Sales</h3>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <PieChart>
+                        <Pie
+                          data={chartData.pieChartData}
+                          dataKey="value"
+                          nameKey="name"
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={80}
+                          fill="#8884d8"
+                          label
+                        >
+                          {chartData.pieChartData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                        <Legend />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4">Statistical Measures</h3>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <BarChart data={chartData.barChartData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="name" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        <Bar dataKey="value" fill="#8884d8" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
               </>
             ) : (
               <p className="text-gray-500 text-center py-8">Loading statistical data...</p>

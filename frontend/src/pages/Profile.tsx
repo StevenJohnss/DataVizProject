@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import api from '../api';
+import { toast } from 'react-toastify';
 
 interface ProfileData {
   email: string;
@@ -50,9 +51,11 @@ const Profile: React.FC = () => {
     try {
       const response = await api.post<AnalysisResult>('/text/analyze', { summary: newSummary });
       setAnalysis(response.data);
+      toast.success('Text analyzed successfully');
     } catch (error) {
       console.error('Error analyzing text:', error);
       setError('Failed to analyze text');
+      toast.error('Failed to analyze text');
     }
   };
 
@@ -60,9 +63,11 @@ const Profile: React.FC = () => {
     try {
       await api.put('/text/profile/update', { summary: newSummary });
       fetchProfile();
+      toast.success('Profile updated successfully');
     } catch (error) {
       console.error('Error updating profile:', error);
       setError('Failed to update profile');
+      toast.error('Failed to update profile');
     }
   };
 
@@ -70,9 +75,11 @@ const Profile: React.FC = () => {
     try {
       const response = await api.post<Visualization>('/text/visualize', { summary: newSummary });
       setVisualization(response.data);
+      toast.success('Text visualized successfully');
     } catch (error) {
       console.error('Error visualizing text:', error);
       setError('Failed to visualize text');
+      toast.error('Failed to visualize text');
     }
   };
 
